@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Refactoring rust2go: One Month, Twenty Small PRs | Renjie Li's Blog</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <div class="container">
+    <article>
+      <h1>Refactoring rust2go: One Month, Twenty Small PRs</h1>
+      <p class="meta">Renjie Li · 2026-09-11</p>
+      <p class="lang-switch">This article also has a <a href="rust2go-refactor-zh.html">Chinese version</a>.</p>
+
+      <p>
+        <a href="https://github.com/ihciah/rust2go">rust2go</a> is a Rust–Go FFI framework created by
+        <a href="https://github.com/ihciah">@ihciah</a>. It lets Rust code call Go (and vice versa) with native
+        async support and without serialization: arguments are passed by memory reference over the C ABI,
+        with an optional shared-memory queue and an assembly fast path for high-frequency calls. The design is
+        covered in ihciah's two articles:
+        <a href="https://en.ihcblog.com/rust2go/">Design and Implementation of a Rust-Go FFI Framework</a> and
+        <a href="https://en.ihcblog.com/rust2go-cgo-asm/">Rust2Go Part2: Exploring CGO Calls for Extreme Performance</a>.
+      </p>
+      <p>
+        This summer I started helping maintain the project as one of its core contributors. Over the past month
+        (August 24 – September 11, 2026), I carried out a full-repository refactor — with the help of
+        <a href="https://www.kimi.com/">Kimi</a>, an AI coding agent, which planned and executed the work under my
+        supervision: <strong>20 PRs, 96 files changed, +6,426 / −4,046 lines, code coverage introduced from
+        scratch (93.04% at first measurement) and raised to 97.39%</strong> — with zero breaking changes to the
+        public API.
+      </p>
+      <p>
+        This article is a retrospective, but hopefully not a boring one. Yes, I'll go through what was done and
+        in what order — but the interesting part of any refactor is never the moving of code. It's what the
+        moving <em>reveals</em>. So I'll also spend a good part of this article on the bugs: a heap corruption
+        that took valgrind, ASan and rr to pin down, a Mac that hung for weeks before confessing, a pointer that
+        wasn't a pointer, and a task that kept itself alive forever.
+      </p>
+      <blockquote>
+        <p>Note: this is a maintainer-oriented engineering log, not a user guide.</p>
+      </blockquote>
+
+      <h2>Why Refactor</h2>
+      <p>
+        rust2go has grown organically since 2023: code generation, derive macros, a CLI, a build-script helper,
+        two runtimes (tokio and monoio), two backends (CGO and shared memory), plus hand-written Go assembly.
+        As features accreted, so did structural debt:
+      </p>
+      <ul>
+        <li>The Go code emitter lived in a single 1,300-line file, with the same primitive-type mapping spelled out in five different <code>match</code> blocks.</li>
+        <li>The derive-macro path and the CLI path each had their own copy of the ref-struct expansion logic — two parallel code generators that could silently drift apart.</li>
+        <li>The five example projects contained byte-identical <code>build.rs</code> files and copy-pasted Go implementations.</li>
+        <li>Macro errors were reported with <code>panic!</code>/<code>unwrap()</code>, producing compiler crashes instead of diagnostics.</li>
+        <li>The documentation had drifted from the code, and there was no coverage gate — in fact, no coverage measurement at all.</li>
+      </ul>
+      <p>
+        None of these hurt users directly — but every one of them made the next change riskier. So the goal of
+        this month was not new features; it was to make the project easy to change safely.
+      </p>
+
+      <h2>Where to Start: Coverage from Zero</h2>
+      <p>
+        Before this month, the project had no coverage at all — no measurement, no gate, and (as we would soon
+        discover) some tests that had never actually been executed. So the very first PR
+        (<a href="https://github.com/ihciah/rust2go/pull/173">#173</a>) didn't refactor anything. It built the
+        measurement itself:
+      </p>
+      <ul>
+        <li>A CI coverage job: Rust coverage collected with <code>cargo llvm-cov</code> (lcov), Go coverage from the <code>test/go</code> module, both uploaded to Codecov. sccache had to be disabled for this job — it does not play well with coverage instrumentation.</li>
+        <li>A first wave of unit tests for the never-tested core: <code>rust2go-convert</code> (ToRef/FromRef roundtrips for primitives, String, Vec, Option, tuples), the atomic slot state machine in <code>rust2go::slot</code>, the <code>ResponseFuture</code> poll lifecycle, and the mem-ring queue/eventfd internals.</li>
+      </ul>
+      <p>
+        The first measurement came back at 93.04% — better than I feared. But the real value of this PR was not
+        the number. It was what happened when the new tests actually <em>ran</em>.
+      </p>
+      <p>
+        First, an embarrassing find: the Go unit tests in <code>test/go</code> had never been executed by CI.
+        Once they ran, every state-dependent case failed with <code>user not exist</code> — the tests
+        constructed an empty <code>Demo</code> with nil maps. They had been broken from the day they were
+        written, and nobody knew, because nobody ran them.
+      </p>
+      <p>
+        Second, a much darker find. The new mem-ring tests crashed the test process — intermittently, with
+        glibc complaining about <code>tcache_thread_shutdown(): unaligned tcache chunk detected</code>. Heap
+        corruption. The story of hunting it down is the first detective story below; it ended with a
+        use-after-free where <em>the kernel</em> was the one writing into freed memory, and a file descriptor
+        being closed twice. Neither had anything to do with coverage, of course. But without coverage, there
+        would have been no tests, and without the tests, nobody would have known.
+      </p>
+
+      <h2>Step 0: Build the Safety Net Before Surgery</h2>
+      <p>
+        With coverage in place, the next task (<a href="https://github.com/ihciah/rust2go/pull/176">#176</a>)
+        still added no refactor at all — only tests that pin the current behavior:
+      </p>
+      <ul>
+        <li>Golden tests for the Go emitter: the generated Go code is compared byte-for-byte against checked-in snapshots, so any codegen drift fails loudly.</li>
+        <li>Unit tests for <code>rust2go-mem-ffi</code> (payload flags, slab helpers, slot state machine) and for the Go side (mem-ring queue/slab, the asmcall trampolines).</li>
+        <li>A CI freshness check: regenerate <code>gen.go</code> from the binding files and fail if it differs from what is committed.</li>
+      </ul>
+      <p>
+        This paid for itself within days: the freshness check immediately caught a hand-edited <code>gen.go</code>
+        that had drifted from its generator, and the golden tests caught a typo (<code>u8</code> → <code>uint</code>)
+        in my own refactor of the primitive table before it could merge. Refactoring without a safety net is just
+        hoping; with one, every later PR became boring — which is exactly what you want.
+      </p>
+
+      <h2>Phase 1: Fix Real Bugs Before Moving Code</h2>
+      <p>
+        Before restructuring anything, I fixed the known P0 bugs — small, independent PRs that are easy to review
+        and easy to revert:
+      </p>
+      <ul>
+        <li>A self-deadlock in mem-ring's write goroutine (<code>continue</code> before <code>Unlock</code>).</li>
+        <li>A broken freelist sentinel in the Go slab allocator.</li>
+        <li>A bogus <code>#[mem_call]</code> attribute in the test suite (should be <code>#[mem]</code>) — caught by the new freshness check.</li>
+        <li>A wrong argument name in the amd64/arm64 assembly (<code>arg1+0x18(FP)</code> should be <code>arg2+0x18(FP)</code>) — the machine code was identical by coincidence, but the source was lying.</li>
+        <li>The <code>monoio</code> and <code>tokio</code> features were supposed to be mutually exclusive, but nothing enforced it — worse, CI built with <code>--all-features</code>, which compiled a configuration no user could ever build. Now a <code>compile_error!</code> guard rejects the combination, and CI tests each runtime in its own job.</li>
+      </ul>
+
+      <h2>Phase 2: Structure</h2>
+      <p>With bugs fixed and tests in place, the structural work became safe:</p>
+      <ul>
+        <li><strong>Single source of truth for primitives.</strong> One table of <code>(rust_ident, c_name, go_name, ...)</code> replaced the five scattered <code>match</code> blocks, and the ref-struct classification is now shared by the derive macro and the CLI — the two codegen paths can no longer drift.</li>
+        <li><strong>A new <code>rust2go-gen</code> crate.</strong> <code>generate()</code> moved out of the CLI into a library crate taking a plain-data <code>GenArgs</code> struct. The CLI is now a thin shell, and the <code>rust2go</code> crate no longer leaks <code>clap</code>/<code>cbindgen</code> into its public API.</li>
+        <li><strong>Layered codegen.</strong> The 1,300-line <code>common.rs</code> was split into <code>ir</code> / <code>emit-rust</code> / <code>emit-go</code> / <code>emit-c</code> layers for both directions (r2g and g2r), and the embedded Go template strings became standalone <code>.go.tmpl</code> files pulled in with <code>include_str!</code>. The golden tests proved the split byte-exact: not a single byte of generated output changed.</li>
+        <li><strong>Shared example template.</strong> Five byte-identical <code>build.rs</code> files, four identical <code>impl.go</code> files, and duplicated tutorial text collapsed into <code>examples/shared/</code>, with a CI check keeping the four <code>impl.go</code> copies in sync. Each example now shows only what makes it different: runtime × backend.</li>
+      </ul>
+
+      <h2>Phase 3: Robustness</h2>
+      <ul>
+        <li><strong>Macros report, they don't crash.</strong> Every <code>panic!</code>/<code>unwrap()</code> on the macro path became a spanned <code>syn::Error</code>. A malformed binding file now produces a proper compiler diagnostic pointing at the offending token — with regression tests, including one for <code>queue_size</code> overflow. (Also fixed along the way: the <code>unreconigzed</code> typo, and a family of variables named <code>trat</code>.)</li>
+        <li><strong>mem-ring stops cleanly.</strong> <code>Notifier.Notify</code>, <code>Awaiter.Wait</code>, and <code>NewAwaiter</code> now return errors instead of spinning forever on a closed fd; the write goroutine and <code>RunHandler</code> gained real stop mechanisms, replacing a dead-code predecessor; and <code>NewAwaiter</code> takes explicit fd ownership so a finalizer can no longer close a descriptor out from under a live connection. The package also declares its <code>//go:build unix</code> constraint honestly instead of failing to compile mysteriously on Windows.</li>
+      </ul>
+
+      <h2>Phase 4: Toolchain and CI</h2>
+      <ul>
+        <li>Deduplicated the cgo fallback between <code>cgocall</code> and <code>asmcall</code>, and centralized workspace dependencies. This surfaced a genuine Cargo pitfall: for workspace-inherited dependencies, a member crate's <code>default-features = false</code> is <em>silently ignored</em> — it must be declared at the workspace root. The leak had been enabling a default feature that tripped our own monoio/tokio mutex guard.</li>
+        <li>CI now pins Go toolchains (a <code>stable</code> alias that tracks new releases, plus a pinned Go 1.18 floor — 1.18 support is a deliberate compatibility commitment, and now CI actually tests it), gates on <code>gofmt -l</code> and <code>go vet</code>, and runs the Go suite on linux amd64 <em>and</em> arm64, macOS arm64, and Windows amd64.</li>
+        <li>Coverage was raised from the initial 93.04% to 97.39% (249 → 102 uncovered lines), with a Codecov gate at 97% — more on the choice of that number below.</li>
+      </ul>
+
+      <h2>Four Detective Stories</h2>
+      <p>
+        The most valuable output of a refactor is the bugs it exposes. Here are the four best, in the order we
+        met them.
+      </p>
+
+      <h3>1. The kernel wrote into freed memory</h3>
+      <p>
+        When the first wave of coverage tests ran, the mem-ring suite started crashing — sometimes, not always —
+        with glibc's <code>tcache_thread_shutdown(): unaligned tcache chunk detected</code>. A heap corruption
+        that only shows up at thread exit, in a lock-free shared-memory queue, on CI machines I could not SSH
+        into. My local machine has no Rust toolchain by design, so every hypothesis had to be tested by pushing
+        a commit and watching CI.
+      </p>
+      <p>
+        So we turned CI into a debugger. Over a dozen temporary commits: run the tests single-threaded; run each
+        test in an isolated process; bisect by test elimination; run under valgrind; run under gdb with malloc
+        checking; run under AddressSanitizer; loop the suite to measure the crash rate; even
+        <code>rr record</code> with reverse watchpoints to catch the corruptor in the act. The intermediate
+        findings kept contradicting simple theories: forcing monoio's legacy driver (no io_uring) changed the
+        crash rate but didn't fix it; the monoio <code>sync</code> feature looked like the discriminant until it
+        wasn't.
+      </p>
+      <p>
+        The real answer turned out to be two bugs, not one.
+      </p>
+      <p>
+        <strong>Bug one: a use-after-free where the writer is the kernel.</strong> The monoio version of
+        <code>Awaiter::wait</code> read the notification fd into a thread-local buffer, passed to the runtime as
+        a raw pointer (<code>RawBuf</code>). Meanwhile the spawned <code>unstuck_handler</code> task could leak
+        past runtime drop (a detached <code>JoinHandle</code> plus a waker/<code>Op</code> <code>Rc</code>
+        cycle), leaving an in-flight kernel <code>recv</code> holding a dangling pointer into freed
+        thread-local storage. When a later <code>notify()</code> completed that read, the kernel happily wrote
+        eight bytes into memory the allocator had already reused — and the heap metadata died. Changing the op
+        to read into an owned <code>Vec</code>, which lives exactly as long as the operation itself, closed the
+        hole.
+      </p>
+      <p>
+        <strong>Bug two: the double-closed fd.</strong> <code>Queue::read</code> and <code>run_handler</code>
+        used to hand the queue's <em>own</em> fd to the peer-side <code>Notifier</code>/<code>Awaiter</code>,
+        while <code>Queue::drop</code> also closed it. One descriptor, closed twice. Harmless in a quiet
+        process — but the tests run in parallel, and between the two closes the fd number can be reused by a
+        completely unrelated owner, which then gets <em>its</em> descriptor closed from under it. Classic fd
+        recycling, and a nightmare to reproduce on purpose.
+      </p>
+      <p>
+        The final fix was a small redesign rather than a patch: fd ownership is now tracked separately from
+        memory ownership. The fd is <em>moved</em> to the <code>Notifier</code>/<code>Awaiter</code> and marked
+        as <code>-1</code> in the queue, so it is closed exactly once; <code>Queue::drop</code> closes only the
+        fds it still owns, and <code>do_drop</code> controls shared-memory freeing and nothing else. Tests
+        verify the close exactly once via <code>POLLHUP</code> on the peer end — robust against fd-number reuse.
+      </p>
+      <p>
+        Total cost: one PR, about twenty CI runs, and a healthy new respect for thread-local raw buffers.
+      </p>
+
+      <h3>2. The hanging Mac</h3>
+      <p>
+        Later, when I added a macOS arm64 leg to CI "just for coverage", it immediately hung:
+        <code>TestCallFuncP0</code> timed out after ten minutes, while the G0 variants and all of Linux passed.
+        The asmcall non-G0 trampoline does a bare <code>CALL R8</code> + <code>RET</code> on the goroutine
+        stack; the G0 variant additionally switches stacks, aligns SP, and saves registers. Since I had no local
+        macOS environment, I temporarily scoped the test to Linux and kept macOS to compile/vet coverage,
+        documenting the leading hypothesis (SP alignment) in the known-issues list.
+      </p>
+      <p>
+        Weeks later the real root cause landed — and it wasn't alignment. On arm64, <code>CALL</code> (i.e.
+        <code>BL</code>) writes the return address into the link register <code>x30</code> — and the trampoline
+        never saved it. Any C callee that itself calls another function clobbers <code>x30</code>, so the
+        trampoline's final <code>RET</code> jumped back into itself and spun forever. On my MacBook, lldb
+        confirmed it in one look: <code>pc == lr == CallFuncP0+8</code>. One save/restore pair for LR fixed it —
+        and the new linux/arm64 CI leg now guards it, because the bug was never darwin-specific: linux/arm64
+        would have hung identically, it was simply never covered. A CI leg added "just for coverage" ended up
+        finding a latent ISA-level bug that predated the refactor.
+      </p>
+
+      <h3>3. The GC escape</h3>
+      <p>
+        Two CI runs of the new mem-ring stop tests failed with corrupted memory. The cause was in my own test
+        helper: it stored a local variable through a <code>uintptr</code> into <code>QueueMeta</code>, which
+        escaped the Go GC's liveness tracking; the stack frame was reused and the "pointer" silently pointed at
+        someone else's data. The fix was to heap-allocate the state and store a real pointer. Lesson re-learned:
+        <code>uintptr</code> is not a pointer, and the GC is under no obligation to keep your target alive.
+      </p>
+
+      <h3>4. The keep-alive cycle</h3>
+      <p>
+        While raising coverage I noticed that one exit branch of mem-ring's <code>unstuck_handler</code> was
+        unreachable — not untested, but <em>dead</em>. The handler task held an <code>Arc</code> to the shared
+        inner state, and the inner state held the stop channel's <code>Receiver</code>. As long as the handler
+        lived, the receiver could never drop, so <code>tx.closed()</code> could never fire — a keep-alive cycle
+        that leaked the task until runtime exit. The fix inverts the ownership: the stop guard is shared only
+        among user-side clones (manual <code>Clone</code> that skips the guard), and the handler receives its
+        dependencies as explicit parameters instead of holding the world. A regression test now drops every
+        <code>WriteQueue</code> and asserts pending items are no longer flushed.
+      </p>
+
+      <h2>Coverage: Why Stop at 97.4%</h2>
+      <p>
+        After the big test-writing push (<a href="https://github.com/ihciah/rust2go/pull/191">#191</a>),
+        coverage stood at 97.39%. The remaining ~24 lines are genuinely untestable or defensive: proc-macro
+        entry points execute inside rustc where <code>llvm-cov</code> cannot instrument them, impossible-state
+        panic arms, and narrow race windows. I chose to gate at 97% (with a 0.5% threshold, and no patch-level
+        gate so that adding defensive code is never blocked) rather than write theatrical tests to chase a
+        round number — a coverage figure you gamed is worse than one you explained.
+      </p>
+
+      <h2>Process Notes</h2>
+      <ul>
+        <li><strong>One small PR per workday.</strong> Each task was developed on a fresh branch from latest master and squash-merged the same day. Small diffs stay reviewable; twenty small PRs are far easier to trust than one 10k-line bomb.</li>
+        <li><strong>Independent review before every push.</strong> Every change went through an iterative, independent code-review loop and was fixed until no actionable findings remained.</li>
+        <li><strong>Docs in the same PR, no CHANGELOG.</strong> User-visible changes were fused directly into the README and <code>docs/</code> in the same commit as the code, so the documentation always describes the code at HEAD. One PR was a full-history documentation review that reconciled every user-visible change since the first external contribution.</li>
+        <li><strong>CI as the only verifier.</strong> My machine had no Rust/Go toolchain by design, so every PR was validated purely by CI. Several PRs went red on the first run — each failure was root-caused (not retries-and-prayers) and merged green the same day.</li>
+        <li><strong>AI-assisted execution.</strong> The day-to-day work — planning, coding, the review-and-fix loops, CI log analysis, and merging — was carried out by <a href="https://www.kimi.com/">Kimi</a>, an AI coding agent running on my machine on a one-task-per-workday schedule. I set the goals, made the judgment calls (for example, keeping Go 1.18 support as a deliberate compatibility commitment, and declining to game the coverage number), and reviewed the results. This article itself was also drafted with Kimi's help.</li>
+      </ul>
+
+      <h2>Numbers and Thanks</h2>
+      <ul>
+        <li>20 PRs merged (<a href="https://github.com/ihciah/rust2go/pull/173">#173</a> – <a href="https://github.com/ihciah/rust2go/pull/193">#193</a>), 96 files changed, +6,426 / −4,046 lines.</li>
+        <li>Code coverage introduced from scratch: 93.04% at first measurement, 97.39% now, gated at 97%.</li>
+        <li>Zero breaking changes to the public API; generated Go output byte-identical before and after the codegen split.</li>
+        <li>Four latent bugs found and fixed that had nothing to do with the refactor itself — including heap corruption in mem-ring and an arm64 ABI bug in the assembly trampoline.</li>
+      </ul>
+      <p>
+        Thanks to <a href="https://github.com/ihciah">@ihciah</a> for creating rust2go, for the trust, and for
+        the reviews — and to <a href="https://www.kimi.com/">Kimi</a> for doing the heavy lifting with me.
+        If you're calling Go from Rust — or just enjoy a good FFI rabbit hole — give the
+        <a href="https://github.com/ihciah/rust2go">project</a> a look.
+      </p>
+
+      <hr>
+      <p class="meta"><a href="../index.html">← Back to index</a></p>
+    </article>
+    <footer>
+      <p>Renjie Li · <a href="https://github.com/lirenjie95">GitHub</a></p>
+    </footer>
+  </div>
+</body>
+</html>
