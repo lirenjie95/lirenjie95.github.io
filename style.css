@@ -93,3 +93,30 @@ footer {
   font-size: 0.85rem;
   margin-top: 3rem;
 }
+
+.talk-card {
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  background: var(--code-bg);
+  transition: border-color 0.15s ease;
+}
+
+.talk-card:hover {
+  border-color: var(--link);
+  text-decoration: none;
+}
+
+.talk-card-title {
+  display: block;
+  font-weight: 600;
+  color: var(--link);
+}
+
+.talk-card-meta {
+  display: block;
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin-top: 0.2rem;
+}
