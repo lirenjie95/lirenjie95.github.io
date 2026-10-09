@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Code? No Problem. — Contributing to open source through p5.js Chinese translation</title>
+<style>
+  :root {
+    --bg: #FFF9F6;
+    --ink: #26222B;
+    --pink: #ED225D;
+    --muted: #5B5660;
+    --faint: #9AA0A6;
+    --card: #FFFFFF;
+    --border: #F2E4E8;
+    --chip: #FFE1EA;
+    --code: #F6F8FA;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+    background: #eef1f4;
+    color: var(--ink);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  #app { height: 100%; display: flex; flex-direction: column; }
+
+  header {
+    height: 52px;
+    flex: 0 0 52px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    background: #ffffff;
+    border-bottom: 1px solid #d0d7de;
+  }
+  header a {
+    color: #0969da;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  header a:hover { text-decoration: underline; }
+  header .crumb { color: #57606a; font-size: 14px; }
+  header .counter { margin-left: auto; font-size: 13px; color: #57606a; }
+
+  #viewport {
+    position: relative;
+    flex: 1 1 auto;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1280px;
+    height: 720px;
+    transform-origin: 0 0;
+    background: var(--bg);
+    overflow: hidden;
+    border-radius: 6px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.16);
+  }
+  .slide.grad { background: linear-gradient(135deg, #ED225D 0%, #FF8FB0 100%); }
+
+  .t { position: absolute; }
+  .bar { position: absolute; background: var(--pink); border-radius: 999px; }
+  .chip { position: absolute; background: var(--chip); border-radius: 999px; }
+  .chip-pink { position: absolute; background: var(--pink); border-radius: 999px; }
+  .card { position: absolute; background: var(--card); border: 1px solid var(--border); border-radius: 8px; }
+  .codebox { position: absolute; background: var(--code); border-radius: 8px; }
+  .pic { position: absolute; border: 1px solid var(--border); border-radius: 4px; object-fit: contain; background: #fff; }
+
+  .c-git   { color: #6F42C1; }
+  .c-arg   { color: #032F62; }
+  .c-flag  { color: #005CC5; }
+  .c-plain { color: #24292E; }
+  .c-com   { color: #6A737D; }
+  .c-blank { color: #E5E7EB; }
+  .code { font-family: 'Menlo','Consolas','SF Mono',monospace; white-space: pre; overflow-x: auto; }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <a href="https://lirenjie95.github.io/">← Renjie Li's Blog</a>
+    <span class="crumb">/ pcd2026-talk</span>
+    <span class="counter" id="counter">1 / 23</span>
+  </header>
+  <div id="viewport">
+
+<!-- ============ SLIDE 1 ============ -->
+<section class="slide">
+  <img class="pic" style="left:72px;top:88px;width:42px;height:42px;border:none;border-radius:0;background:transparent" src="media/image1.svg" alt="">
+  <div class="t" style="left:128px;top:92px;font-size:28px;font-weight:700;color:#26222B">p5.js</div>
+  <div class="bar" style="left:72px;top:170px;width:10px;height:10px"></div>
+  <div class="t" style="left:92px;top:164px;font-size:17px;font-weight:700;color:#ED225D">PROCESSING COMMUNITY DAY 2026 · 25 YEARS</div>
+  <div class="t" style="left:72px;top:209px;font-size:78px;font-weight:700;color:#26222B;line-height:1.1">No Code?<br>No Problem.</div>
+  <div class="t" style="left:72px;top:422px;font-size:25px;color:#26222B">Contributing to open source through <b style="color:#ED225D">p5.js</b> Chinese translation</div>
+  <div class="chip" style="left:72px;top:500px;width:271px;height:36px"></div>
+  <div class="t" style="left:88px;top:508px;font-size:16px;font-weight:700;color:#ED225D">lirenjie95 · Community Steward</div>
+  <div class="chip" style="left:355px;top:500px;width:145px;height:36px"></div>
+  <div class="t" style="left:371px;top:508px;font-size:16px;font-weight:700;color:#ED225D">i18n &amp; DevOps</div>
+  <div class="t" style="left:72px;top:562px;font-size:15px;color:#9AA0A6">Suzhou · Oct 17</div>
+  <div class="t" style="left:205px;top:562px;font-size:15px;color:#9AA0A6">Shanghai · Oct 31</div>
+  <img class="pic" style="left:820px;top:150px;width:420px;height:420px;border:none;border-radius:0;background:transparent" src="media/image2.svg" alt="">
+</section>
+
+<!-- ============ SLIDE 2 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:44px;width:8px;height:34px"></div>
+  <div class="t" style="left:82px;top:40px;font-size:34px;font-weight:700;color:#26222B">Hi, I'm lirenjie95</div>
+  <div class="t" style="left:60px;top:239px;font-size:21px;font-weight:700;color:#26222B">Community steward at p5.js</div>
+  <div class="t" style="left:60px;top:271px;font-size:17px;color:#5B5660">I help keep the community welcoming and well-organized.</div>
+  <div class="t" style="left:60px;top:324px;font-size:21px;font-weight:700;color:#26222B">I take care of i18n &amp; DevOps</div>
+  <div class="t" style="left:60px;top:356px;font-size:17px;color:#5B5660;max-width:587px">i18n = internationalization: making p5.js readable in many languages, especially Chinese.</div>
+  <div class="chip" style="left:60px;top:440px;width:587px;height:90px;border-radius:12px"></div>
+  <div class="t" style="left:78px;top:454px;font-size:17px;color:#26222B;max-width:551px;line-height:1.5">Most of my work is <b style="color:#ED225D">reviewing Chinese translations</b> — and most contributors aren't programmers.</div>
+
+  <div class="card" style="left:687px;top:105px;width:240px;height:150px"></div>
+  <div class="t" style="left:707px;top:128px;font-size:64px;font-weight:700;color:#ED225D">35</div>
+  <div class="t" style="left:707px;top:213px;font-size:16px;color:#5B5660">PRs reviewed</div>
+  <div class="card" style="left:943px;top:105px;width:240px;height:150px"></div>
+  <div class="t" style="left:963px;top:128px;font-size:64px;font-weight:700;color:#ED225D">11</div>
+  <div class="t" style="left:963px;top:213px;font-size:16px;color:#5B5660">PRs authored</div>
+  <div class="card" style="left:687px;top:392px;width:240px;height:150px"></div>
+  <div class="t" style="left:707px;top:415px;font-size:64px;font-weight:700;color:#ED225D">15</div>
+  <div class="t" style="left:707px;top:500px;font-size:16px;color:#5B5660">commits</div>
+  <div class="card" style="left:943px;top:392px;width:240px;height:150px"></div>
+  <div class="t" style="left:963px;top:415px;font-size:64px;font-weight:700;color:#ED225D">6</div>
+  <div class="t" style="left:963px;top:500px;font-size:16px;color:#5B5660">issues opened</div>
+
+  <div class="t" style="left:60px;top:675px;font-size:14px;color:#9AA0A6">Source: p5.js + p5.js-website · github.com/processing</div>
+  <div class="t" style="left:1177px;top:675px;font-size:14px;color:#9AA0A6">02 / 23</div>
+</section>
+
+<!-- ============ SLIDE 3 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:44px;width:8px;height:34px"></div>
+  <div class="t" style="left:82px;top:40px;font-size:34px;font-weight:700;color:#26222B">What is p5.js?</div>
+  <img class="pic" style="left:139px;top:202px;width:360px;height:360px;border:none;background:transparent" src="media/image26.svg" alt="">
+  <div class="t" style="left:625px;top:271px;font-size:21px;color:#26222B;max-width:595px;line-height:1.5">A friendly <b style="color:#ED225D">JavaScript library</b> for creative coding — draw, animate, and make things interactive in your browser.</div>
+  <div class="t" style="left:625px;top:368px;font-size:19px;color:#5B5660;max-width:595px;line-height:1.5">It's the web sibling of <b style="color:#26222B">Processing</b>, built for artists, designers, and beginners — not just engineers.</div>
+  <div class="t" style="left:625px;top:457px;font-size:19px;color:#5B5660;max-width:595px">Millions use it to learn code by <b style="color:#26222B">making art</b>.</div>
+  <div class="t" style="left:60px;top:675px;font-size:14px;color:#9AA0A6">lirenjie95 · PCD 2026</div>
+  <div class="t" style="left:1177px;top:675px;font-size:14px;color:#9AA0A6">03 / 23</div>
+</section>
+
+<!-- ============ SLIDE 4 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:44px;width:8px;height:34px"></div>
+  <div class="t" style="left:82px;top:40px;font-size:34px;font-weight:700;color:#26222B">Open source is bigger than code</div>
+  <div class="t" style="left:60px;top:299px;font-size:26px;font-weight:700;color:#26222B;max-width:448px;line-height:1.3">A project needs many hands — most of them never write code.</div>
+  <div class="t" style="left:60px;top:400px;font-size:18px;color:#5B5660;max-width:448px;line-height:1.4">Every button you've ever clicked in free software exists because someone contributed it.</div>
+
+  <div class="card" style="left:548px;top:291px;width:168px;height:84px;display:flex;align-items:center;justify-content:flex-start;padding-left:14px">
+    <img style="width:26px;height:26px" src="media/image27.svg" alt=""><span style="margin-left:12px;font-size:17px;font-weight:700;color:#26222B;white-space:nowrap">Code</span>
+  </div>
+  <div class="card" style="left:730px;top:291px;width:168px;height:84px;display:flex;align-items:center;justify-content:flex-start;padding-left:14px">
+    <img style="width:26px;height:26px" src="media/image28.svg" alt=""><span style="margin-left:8px;font-size:17px;font-weight:700;color:#26222B;white-space:nowrap">Documentation</span>
+  </div>
+  <div class="card" style="left:912px;top:291px;width:168px;height:84px;display:flex;align-items:center;justify-content:flex-start;padding-left:14px">
+    <img style="width:26px;height:26px" src="media/image29.svg" alt=""><span style="margin-left:11px;font-size:17px;font-weight:700;color:#26222B;white-space:nowrap">Translation</span>
+  </div>
+  <div class="card" style="left:548px;top:389px;width:168px;height:84px;display:flex;align-items:center;justify-content:flex-start;padding-left:14px">
+    <img style="width:26px;height:26px" src="media/image30.svg" alt=""><span style="margin-left:11px;font-size:17px;font-weight:700;color:#26222B;white-space:nowrap">Design</span>
+  </div>
+  <div class="card" style="left:730px;top:389px;width:168px;height:84px;display:flex;align-items:center;justify-content:flex-start;padding-left:14px">
+    <img style="width:26px;height:26px" src="media/image31.svg" alt=""><span style="margin-left:11px;font-size:17px;font-weight:700;color:#26222B;white-space:nowrap">Testing</span>
+  </div>
+  <div class="card" style="left:912px;top:389px;width:168px;height:84px;display:flex;align-items:center;justify-content:flex-start;padding-left:14px">
+    <img style="width:26px;height:26px" src="media/image32.svg" alt=""><span style="margin-left:11px;font-size:17px;font-weight:700;color:#26222B;white-space:nowrap">Community</span>
+  </div>
+
+  <div class="t" style="left:60px;top:675px;font-size:14px;color:#9AA0A6">lirenjie95 · PCD 2026</div>
+  <div class="t" style="left:1177px;top:675px;font-size:14px;color:#9AA0A6">04 / 23</div>
+</section>
+
+<!-- ============ SLIDE 5 ============ -->
+<section class="slide hidden">
+  <div class="t" style="left:541px;top:174px;font-size:17px;font-weight:700;color:#ED225D;text-align:center;width:200px">WHY TRANSLATE?</div>
+  <div class="t" style="left:0px;top:215px;font-size:72px;font-weight:700;color:#26222B;text-align:center;width:1280px;line-height:1.15;white-space:nowrap">Docs are a door.<br><span style="color:#ED225D">Translation opens it.</span></div>
+  <div class="t" style="left:139px;top:425px;font-size:21px;color:#5B5660;text-align:center;width:1003px">Chinese readers can't learn what they can't read. Translating the docs lowers the door for millions of people.</div>
+  <div class="card" style="left:367px;top:497px;width:244px;height:49px"></div>
+  <div class="t" style="left:387px;top:511px;font-size:17px;color:#5B5660">circle(x, y, d) draws a circle</div>
+  <div class="t" style="left:627px;top:497px;width:22px;height:49px;font-size:22px;font-weight:700;color:#ED225D;line-height:49px">→</div>
+  <div class="chip" style="left:665px;top:497px;width:249px;height:49px;border-radius:8px"></div>
+  <div class="t" style="left:685px;top:511px;font-size:17px;color:#26222B">circle(x, y, d) 绘制一个圆形</div>
+</section>
+
+<!-- ============ SLIDE 6 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:44px;width:8px;height:34px"></div>
+  <div class="t" style="left:82px;top:40px;font-size:34px;font-weight:700;color:#26222B">You don't need to code</div>
+
+  <img class="pic" style="left:60px;top:274px;width:30px;height:30px;border:none;background:transparent" src="media/image25.svg" alt="">
+  <div class="t" style="left:106px;top:274px;font-size:19px;color:#26222B;max-width:568px;line-height:1.4">English majors, translation majors, designers — if you can read English and write natural Chinese, <b>you already have the skill</b>.</div>
+  <img class="pic" style="left:60px;top:365px;width:30px;height:30px;border:none;background:transparent" src="media/image25.svg" alt="">
+  <div class="t" style="left:106px;top:365px;font-size:19px;color:#26222B;max-width:568px">No algorithms. No build tools. No jargon. Just <b>good writing</b>.</div>
+  <img class="pic" style="left:60px;top:422px;width:30px;height:30px;border:none;background:transparent" src="media/image25.svg" alt="">
+  <div class="t" style="left:106px;top:422px;font-size:19px;color:#26222B;max-width:568px;line-height:1.4">Translation is the <b style="color:#ED225D">lowest door</b> into open source — and it teaches you the workflow you'll use everywhere else.</div>
+
+  <div class="card" style="left:718px;top:280px;width:502px;height:205px"></div>
+  <div class="t" style="left:746px;top:306px;font-size:24px;font-weight:700;color:#ED225D;max-width:446px;line-height:1.3">“You are a future contributor — not an outsider.”</div>
+  <div class="t" style="left:746px;top:401px;font-size:16px;color:#5B5660;max-width:446px;line-height:1.4">This talk treats you as the person who will make the next translation better.</div>
+
+  <div class="t" style="left:60px;top:675px;font-size:14px;color:#9AA0A6">lirenjie95 · PCD 2026</div>
+  <div class="t" style="left:1177px;top:675px;font-size:14px;color:#9AA0A6">06 / 23</div>
+</section>
+
+<!-- ============ SLIDE 7 (grad) ============ -->
+<section class="slide grad hidden">
+  <div class="t" style="left:0px;top:273px;font-size:18px;font-weight:700;color:#FFF9F6;text-align:center;width:1280px;white-space:nowrap">THE HANDS-ON PART</div>
+  <div class="t" style="left:0px;top:313px;font-size:64px;font-weight:700;color:#FFF9F6;text-align:center;width:1280px;white-space:nowrap">Let's do it together.</div>
+  <div class="t" style="left:0px;top:418px;font-size:24px;color:#FFF9F6;text-align:center;width:1280px;white-space:nowrap">From zero to your first translation PR — step by step.</div>
+</section>
+
+<!-- ============ SLIDE 8 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:44px;width:8px;height:34px"></div>
+  <div class="t" style="left:82px;top:40px;font-size:34px;font-weight:700;color:#26222B">Step 1 · Git in 60 seconds</div>
+  <div class="t" style="left:60px;top:257px;font-size:22px;color:#26222B;max-width:476px;line-height:1.4"><b style="color:#ED225D">Git</b> is a time machine for your files — it remembers every saved version.</div>
+  <div class="chip" style="left:60px;top:361px;width:476px;height:98px;border-radius:12px"></div>
+  <div class="t" style="left:80px;top:377px;font-size:17px;color:#26222B;line-height:1.5"><b>commit</b> = save a snapshot<br><b>push</b> = upload it to GitHub</div>
+  <div class="t" style="left:60px;top:479px;font-size:16px;color:#5B5660;max-width:476px">Install it once, then these five commands are all you repeat.</div>
+
+  <div class="code" style="position:absolute;left:576px;top:292px;width:644px;background:var(--code);border-radius:8px;padding:14px 16px;font-size:15px;line-height:1.65"><span class="c-git">git</span><span class="c-plain"> </span><span class="c-arg">clone</span><span class="c-plain"> </span><span class="c-arg">https://github.com/processing/p5.js-website.git</span><br><span class="c-flag">cd</span><span class="c-plain"> </span><span class="c-arg">p5.js-website</span><br><span class="c-git">git</span><span class="c-plain"> </span><span class="c-arg">checkout</span><span class="c-plain"> </span><span class="c-flag">-b</span><span class="c-plain"> </span><span class="c-arg">my-translation</span><br><span class="c-git">git</span><span class="c-plain"> </span><span class="c-arg">add</span><span class="c-plain"> </span><span class="c-arg">.</span><br><span class="c-git">git</span><span class="c-plain"> </span><span class="c-arg">commit</span><span class="c-plain"> </span><span class="c-flag">-m</span><span class="c-plain"> </span><span class="c-arg">"Translate the Donate page"</span><br><span class="c-git">git</span><span class="c-plain"> </span><span class="c-arg">push</span><span class="c-plain"> </span><span class="c-arg">origin</span><span class="c-plain"> </span><span class="c-arg">my-translation</span></div>
+
+  <div class="t" style="left:60px;top:675px;font-size:14px;color:#9AA0A6">lirenjie95 · PCD 2026</div>
+  <div class="t" style="left:1177px;top:675px;font-size:14px;color:#9AA0A6">08 / 23</div>
+</section>
+
+<!-- ============ SLIDE 9 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:44px;width:8px;height:34px"></div>
+  <div class="t" style="left:82px;top:40px;font-size:34px;font-weight:700;color:#26222B">Step 2 · GitHub is the shared workspace</div>
+
+  <div class="chip" style="left:278px;top:101px;width:160px;height:61px;border-radius:12px"></div>
+  <div class="t" style="left:298px;top:113px;font-size:17px;font-weight:700;color:#26222B">Fork</div>
+  <div class="t" style="left:298px;top:134px;font-size:13px;color:#5B5660">copy to your account</div>
+  <div class="t" style="left:448px;top:117px;font-size:24px;font-weight:700;color:#ED225D">→</div>
+
+  <div class="chip" style="left:482px;top:101px;width:154px;height:61px;border-radius:12px"></div>
+  <div class="t" style="left:502px;top:113px;font-size:17px;font-weight:700;color:#26222B">Branch</div>
+  <div class="t" style="left:502px;top:134px;font-size:13px;color:#5B5660">your own draft copy</div>
+  <div class="t" style="left:646px;top:117px;font-size:24px;font-weight:700;color:#ED225D">→</div>
+
+  <div class="chip" style="left:680px;top:101px;width:135px;height:61px;border-radius:12px"></div>
+  <div class="t" style="left:700px;top:113px;font-size:17px;font-weight:700;color:#26222B">Commit</div>
+  <div class="t" style="left:700px;top:134px;font-size:13px;color:#5B5660">save a snapshot</div>
+  <div class="t" style="left:825px;top:117px;font-size:24px;font-weight:700;color:#ED225D">→</div>
+
+  <div class="chip-pink" style="left:859px;top:101px;width:143px;height:61px;border-radius:12px"></div>
+  <div class="t" style="left:879px;top:113px;font-size:17px;font-weight:700;color:#FFFFFF">Pull Request</div>
+  <div class="t" style="left:879px;top:134px;font-size:13px;color:#FFFFFF">ask to merge</div>
+
+  <div class="t" style="left:165px;top:192px;font-size:21px;color:#26222B;max-width:950px">A <b style="color:#ED225D">Pull Request (PR)</b> is politely asking the project: “please merge my changes into the official version.”</div>
+
+  <div class="t" style="left:60px;top:675px;font-size:14px;color:#9AA0A6">lirenjie95 · PCD 2026</div>
+  <div class="t" style="left:1177px;top:675px;font-size:14px;color:#9AA0A6">09 / 23</div>
+</section>
+
+<!-- ============ SLIDE 10 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:44px;width:8px;height:34px"></div>
+  <div class="t" style="left:82px;top:40px;font-size:34px;font-weight:700;color:#26222B">Step 3 · Find an issue — or file your own</div>
+
+  <div class="card" style="left:60px;top:101px;width:568px;height:517px"></div>
+  <img class="pic" style="left:84px;top:123px;width:28px;height:28px;border:none;background:transparent" src="media/image3.svg" alt="">
+  <div class="t" style="left:124px;top:124px;font-size:22px;font-weight:700;color:#26222B">Find an issue</div>
+  <div class="t" style="left:84px;top:165px;font-size:18px;color:#5B5660;max-width:520px;line-height:1.5">An <b style="color:#26222B">issue</b> is a tracked to-do item on the repo. The repo auto-creates <b style="color:#26222B">🌍 Update translations for X</b> issues, labelled <b style="color:#26222B">Help Wanted · needs translation · lang-zh-Hans</b>. Comment to claim one — a maintainer assigns it to you.</div>
+
+  <div class="card" style="left:652px;top:101px;width:568px;height:517px"></div>
+  <img class="pic" style="left:676px;top:123px;width:28px;height:28px;border:none;background:transparent" src="media/image4.svg" alt="">
+  <div class="t" style="left:716px;top:124px;font-size:22px;font-weight:700;color:#26222B">File your own</div>
+  <div class="t" style="left:676px;top:165px;font-size:18px;color:#5B5660;max-width:520px;line-height:1.5">Notice a missing page or a clunky phrase? Open an issue describing it, ask to be assigned — then turn it into a PR.</div>
+
+  <div class="chip" style="left:345px;top:630px;width:591px;height:45px;border-radius:8px"></div>
+  <div class="t" style="left:369px;top:642px;font-size:17px;font-weight:700;color:#ED225D">Either way → create a PR that links the issue → then ask for review</div>
+
+  <div class="t" style="left:60px;top:675px;font-size:14px;color:#9AA0A6">lirenjie95 · PCD 2026</div>
+  <div class="t" style="left:1177px;top:675px;font-size:14px;color:#9AA0A6">10 / 23</div>
+</section>
+
+<!-- ============ SLIDE 11 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:34px;width:8px;height:32px"></div>
+  <div class="t" style="left:82px;top:32px;font-size:30px;font-weight:700;color:#26222B">For real: from issue to PR</div>
+  <div class="t" style="left:60px;top:110px;font-size:15px;font-weight:700;color:#ED225D">FIND AN ISSUE — on tracker #1150, I told SihongShen to go ahead</div>
+  <div class="pic" style="left:60px;top:134px;width:1160px;height:172px;padding:0"><img style="width:100%;height:100%;object-fit:fill;border-radius:3px" src="media/image5.png" alt=""></div>
+  <div class="t" style="left:60px;top:346px;font-size:15px;font-weight:700;color:#ED225D">FILE YOUR OWN — I noticed missing pages in #783</div>
+  <div class="pic" style="left:60px;top:370px;width:700px;height:279px;padding:0"><img style="width:100%;height:100%;object-fit:fill;border-radius:3px" src="media/image6.png" alt=""></div>
+  <div class="card" style="left:784px;top:346px;width:436px;height:303px"></div>
+  <div class="t" style="left:804px;top:382px;font-size:18px;color:#26222B;max-width:396px;line-height:1.4">I compiled every untranslated page into an issue, asked to be assigned, then shipped the fixes as a PR.</div>
+  <div class="t" style="left:804px;top:495px;font-size:16px;color:#5B5660;max-width:396px;line-height:1.4">An issue is how work gets tracked — and how you get credit for spotting it.</div>
+  <div class="chip" style="left:804px;top:569px;width:396px;height:44px;border-radius:8px"></div>
+  <div class="t" style="left:820px;top:581px;font-size:16px;font-weight:700;color:#ED225D">Issue → get assigned → PR → merge.</div>
+  <div class="t" style="left:60px;top:679px;font-size:14px;color:#9AA0A6">Real GitHub issues · github.com</div>
+  <div class="t" style="left:1178px;top:679px;font-size:14px;color:#9AA0A6">11 / 23</div>
+</section>
+
+<!-- ============ SLIDE 12 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:44px;width:8px;height:34px"></div>
+  <div class="t" style="left:82px;top:40px;font-size:34px;font-weight:700;color:#26222B">Step 4 · See your changes locally</div>
+  <div class="t" style="left:60px;top:300px;font-size:22px;color:#26222B;max-width:476px;line-height:1.4">Run the website on your own machine, so you can <b style="color:#ED225D">preview your translation</b> before sharing it.</div>
+  <img class="pic" style="left:60px;top:402px;width:28px;height:28px;border:none;background:transparent" src="media/image7.svg" alt="">
+  <div class="t" style="left:102px;top:402px;font-size:17px;color:#5B5660;max-width:434px;line-height:1.4">The exact steps are in the repo's README and contributing guide — always trust those first.</div>
+
+  <div class="code" style="position:absolute;left:576px;top:318px;width:644px;background:var(--code);border-radius:8px;padding:14px 16px;font-size:15px;line-height:1.65"><span class="c-git">npm</span><span class="c-plain"> </span><span class="c-arg">install</span><span class="c-plain">        </span><span class="c-com"># install the tools</span><br><span class="c-git">npm</span><span class="c-plain"> </span><span class="c-arg">run</span><span class="c-plain"> </span><span class="c-arg">dev</span><span class="c-plain">        </span><span class="c-com"># start the site</span><br><span class="c-com"># open http://localhost:4321</span><br><span class="c-com"># see your page, proofread, done!</span></div>
+
+  <div class="t" style="left:60px;top:675px;font-size:14px;color:#9AA0A6">lirenjie95 · PCD 2026</div>
+  <div class="t" style="left:1177px;top:675px;font-size:14px;color:#9AA0A6">12 / 23</div>
+</section>
+
+<!-- ============ SLIDE 13 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:44px;width:8px;height:34px"></div>
+  <div class="t" style="left:82px;top:40px;font-size:34px;font-weight:700;color:#26222B">Step 5 · Submit → review → merge</div>
+
+  <div class="chip" style="left:250px;top:101px;width:104px;height:44px"></div>
+  <div class="t" style="left:268px;top:113px;font-size:16px;font-weight:700;color:#26222B">Open PR</div>
+  <div class="t" style="left:364px;top:109px;font-size:24px;font-weight:700;color:#ED225D">→</div>
+
+  <div class="chip" style="left:398px;top:101px;width:191px;height:44px"></div>
+  <div class="t" style="left:416px;top:113px;font-size:16px;font-weight:700;color:#26222B">Reviewer comments</div>
+  <div class="t" style="left:599px;top:109px;font-size:24px;font-weight:700;color:#ED225D">→</div>
+
+  <div class="chip" style="left:633px;top:101px;width:89px;height:44px"></div>
+  <div class="t" style="left:651px;top:113px;font-size:16px;font-weight:700;color:#26222B">You fix</div>
+  <div class="t" style="left:732px;top:109px;font-size:24px;font-weight:700;color:#ED225D">→</div>
+
+  <div class="chip" style="left:766px;top:101px;width:111px;height:44px"></div>
+  <div class="t" style="left:784px;top:113px;font-size:16px;font-weight:700;color:#26222B">Approved</div>
+  <div class="t" style="left:887px;top:109px;font-size:24px;font-weight:700;color:#ED225D">→</div>
+
+  <div class="chip-pink" style="left:921px;top:101px;width:110px;height:44px"></div>
+  <div class="t" style="left:939px;top:113px;font-size:16px;font-weight:700;color:#FFFFFF">Merged ✓</div>
+
+  <div class="t" style="left:260px;top:175px;font-size:21px;color:#26222B">You'll get <b style="color:#ED225D">kind, specific feedback</b> — not a test. Let me show you three real ones.</div>
+
+  <div class="t" style="left:60px;top:675px;font-size:14px;color:#9AA0A6">lirenjie95 · PCD 2026</div>
+  <div class="t" style="left:1177px;top:675px;font-size:14px;color:#9AA0A6">13 / 23</div>
+</section>
+
+<!-- ============ SLIDE 14 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:44px;width:8px;height:34px"></div>
+  <div class="t" style="left:82px;top:40px;font-size:34px;font-weight:700;color:#26222B">Translation = writing good Chinese</div>
+  <div class="t" style="left:60px;top:231px;font-size:26px;font-weight:700;color:#26222B;max-width:498px;line-height:1.3">What matters isn't your English — it's your Chinese.</div>
+  <div class="t" style="left:60px;top:329px;font-size:18px;color:#5B5660;max-width:498px;line-height:1.4">Non-native translations often come out awkward. That's why we need <b style="color:#26222B">native Chinese speakers</b> — people like you.</div>
+  <div class="chip" style="left:60px;top:416px;width:498px;height:117px;border-radius:12px"></div>
+  <div class="t" style="left:80px;top:432px;font-size:16px;font-style:italic;color:#26222B;max-width:458px;line-height:1.5">“We prefer a native Chinese speaker — non-native translations often end up with awkward phrasing.”</div>
+  <div class="t" style="left:80px;top:500px;font-size:14px;color:#5B5660">— my reply on the v2 Teachers' Guide issue</div>
+
+  <div class="card" style="left:598px;top:210px;width:622px;height:107px"></div>
+  <div class="t" style="left:614px;top:222px;font-size:14px;font-weight:700;color:#ED225D">先专业直译，拗口再意译</div>
+  <img style="position:absolute;left:614px;top:249px;width:16px;height:16px" src="media/image8.svg" alt="">
+  <div class="t" style="left:638px;top:245px;font-size:16px;color:#9AA0A6">“把……想象成……会很有帮助”</div>
+  <img style="position:absolute;left:614px;top:282px;width:16px;height:16px" src="media/image9.svg" alt="">
+  <div class="t" style="left:638px;top:278px;font-size:16px;color:#26222B">把这个函数想象成饼干模具，会更容易理解</div>
+
+  <div class="card" style="left:598px;top:329px;width:622px;height:107px"></div>
+  <div class="t" style="left:614px;top:341px;font-size:14px;font-weight:700;color:#ED225D">主动，别被动</div>
+  <img style="position:absolute;left:614px;top:368px;width:16px;height:16px" src="media/image8.svg" alt="">
+  <div class="t" style="left:638px;top:364px;font-size:16px;color:#9AA0A6">这样每一棵树都可以被自定义</div>
+  <img style="position:absolute;left:614px;top:401px;width:16px;height:16px" src="media/image9.svg" alt="">
+  <div class="t" style="left:638px;top:397px;font-size:16px;color:#26222B">以便自定义每一棵树</div>
+
+  <div class="card" style="left:598px;top:448px;width:622px;height:107px"></div>
+  <div class="t" style="left:614px;top:460px;font-size:14px;font-weight:700;color:#ED225D">用词自然，术语统一</div>
+  <img style="position:absolute;left:614px;top:487px;width:16px;height:16px" src="media/image8.svg" alt="">
+  <div class="t" style="left:638px;top:483px;font-size:16px;color:#9AA0A6">“原旨” · sketch 又译“原稿”</div>
+  <img style="position:absolute;left:614px;top:520px;width:16px;height:16px" src="media/image9.svg" alt="">
+  <div class="t" style="left:638px;top:516px;font-size:16px;color:#26222B">“使命” · sketch 全篇统一“草图”</div>
+
+  <div class="t" style="left:60px;top:675px;font-size:14px;color:#9AA0A6">Real examples from my PR reviews · github.com</div>
+  <div class="t" style="left:1177px;top:675px;font-size:14px;color:#9AA0A6">14 / 23</div>
+</section>
+
+<!-- ============ SLIDE 15 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:34px;width:8px;height:32px"></div>
+  <div class="t" style="left:82px;top:32px;font-size:30px;font-weight:700;color:#26222B">Case 1 · PR #715 — Donate page · by Darrenhqf</div>
+  <div class="pic" style="left:60px;top:111px;width:1160px;height:158px;padding:0"><img style="width:100%;height:100%;object-fit:fill;border-radius:3px" src="media/image10.png" alt=""></div>
+  <div class="pic" style="left:60px;top:307px;width:720px;height:343px;padding:0"><img style="width:100%;height:100%;object-fit:fill;border-radius:3px" src="media/image11.png" alt=""></div>
+  <div class="card" style="left:804px;top:307px;width:416px;height:343px"></div>
+  <div class="t" style="left:824px;top:364px;font-size:19px;color:#26222B;max-width:376px;line-height:1.4">First-time contributor <b>Darrenhqf</b> translated one page.</div>
+  <div class="t" style="left:824px;top:449px;font-size:17px;color:#5B5660;max-width:376px;line-height:1.4">I reviewed → suggested better wording (原旨 → 使命) → they fixed → merged.</div>
+  <div class="chip" style="left:824px;top:531px;width:376px;height:63px;border-radius:12px"></div>
+  <div class="t" style="left:840px;top:543px;font-size:16px;font-weight:700;color:#ED225D;max-width:344px;line-height:1.3">Your first PR can be small — a single page is enough.</div>
+  <div class="t" style="left:60px;top:679px;font-size:14px;color:#9AA0A6">Real GitHub PR · github.com</div>
+  <div class="t" style="left:1177px;top:679px;font-size:14px;color:#9AA0A6">15 / 23</div>
+</section>
+
+<!-- ============ SLIDE 16 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:34px;width:8px;height:32px"></div>
+  <div class="t" style="left:82px;top:32px;font-size:30px;font-weight:700;color:#26222B">Case 2 · PR #1568 · by GanLuy1223</div>
+  <div class="pic" style="left:60px;top:126px;width:1160px;height:158px;padding:0"><img style="width:100%;height:100%;object-fit:fill;border-radius:3px" src="media/image12.png" alt=""></div>
+  <div class="pic" style="left:60px;top:338px;width:720px;height:166px;padding:0"><img style="width:100%;height:100%;object-fit:fill;border-radius:3px" src="media/image13.png" alt=""></div>
+  <div class="card" style="left:804px;top:338px;width:416px;height:297px"></div>
+  <div class="t" style="left:824px;top:356px;font-size:19px;color:#26222B;max-width:376px;line-height:1.4">GanLuy1223's v2 teacher's guide translation <b>broke the build</b>.</div>
+  <div class="t" style="left:824px;top:441px;font-size:17px;color:#5B5660;max-width:376px;line-height:1.4">My review caught the CI failure and a wrong keyword (async should be await). Contributor fixed both, then approved &amp; merged.</div>
+  <div class="chip" style="left:824px;top:554px;width:376px;height:63px;border-radius:12px"></div>
+  <div class="t" style="left:840px;top:566px;font-size:16px;font-weight:700;color:#ED225D;max-width:344px;line-height:1.3">Review catches what you can't see working alone.</div>
+  <div class="t" style="left:60px;top:679px;font-size:14px;color:#9AA0A6">Real GitHub PR · github.com</div>
+  <div class="t" style="left:1177px;top:679px;font-size:14px;color:#9AA0A6">16 / 23</div>
+</section>
+
+<!-- ============ SLIDE 17 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:34px;width:8px;height:32px"></div>
+  <div class="t" style="left:82px;top:32px;font-size:30px;font-weight:700;color:#26222B">Case 3 · PR #1302 · by Chiuye</div>
+  <div class="pic" style="left:60px;top:126px;width:1160px;height:158px;padding:0"><img style="width:100%;height:100%;object-fit:fill;border-radius:3px" src="media/image14.png" alt=""></div>
+  <div class="pic" style="left:60px;top:338px;width:720px;height:174px;padding:0"><img style="width:100%;height:100%;object-fit:fill;border-radius:3px" src="media/image15.png" alt=""></div>
+  <div class="card" style="left:804px;top:338px;width:416px;height:297px"></div>
+  <div class="t" style="left:824px;top:356px;font-size:19px;color:#26222B;max-width:376px;line-height:1.4">Chiuye translated <b>organizing-code-with-functions</b>.</div>
+  <div class="t" style="left:824px;top:441px;font-size:17px;color:#5B5660;max-width:376px;line-height:1.4">Review is about nuance — 直译与意译的取舍, consistent terms. 11 comments → polished → approved.</div>
+  <div class="chip" style="left:824px;top:554px;width:376px;height:63px;border-radius:12px"></div>
+  <div class="t" style="left:840px;top:566px;font-size:16px;font-weight:700;color:#ED225D;max-width:344px;line-height:1.3">Good review makes the translation read naturally.</div>
+  <div class="t" style="left:60px;top:679px;font-size:14px;color:#9AA0A6">Real GitHub PR · github.com</div>
+  <div class="t" style="left:1177px;top:679px;font-size:14px;color:#9AA0A6">17 / 23</div>
+</section>
+
+<!-- ============ SLIDE 18 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:34px;width:8px;height:32px"></div>
+  <div class="t" style="left:82px;top:32px;font-size:30px;font-weight:700;color:#26222B">luciawang0901 · 1/3 — she volunteered</div>
+  <div class="pic" style="left:60px;top:80px;width:1160px;height:158px;padding:0"><img style="width:100%;height:100%;object-fit:fill;border-radius:3px" src="media/image16.png" alt=""></div>
+  <div class="t" style="left:60px;top:384px;font-size:20px;color:#26222B;max-width:728px;line-height:1.4">luciawang0901 is an <b>English-major student</b>. She found my post on <b>小红书</b> and — with <b style="color:#ED225D">zero tech background</b> — just raised her hand to translate “Setting Up Your Environment”.</div>
+  <div class="t" style="left:60px;top:512px;font-size:17px;color:#5B5660;max-width:728px">That's how it starts: an issue where you say “I'd like to help” — not a line of code.</div>
+  <div class="chip" style="left:828px;top:415px;width:392px;height:97px;border-radius:12px"></div>
+  <div class="t" style="left:848px;top:433px;font-size:18px;font-weight:700;color:#ED225D;max-width:352px;line-height:1.4">No code, no Git — just a willingness to help.</div>
+  <div class="t" style="left:60px;top:679px;font-size:14px;color:#9AA0A6">Real contributor journey · github.com</div>
+  <div class="t" style="left:1177px;top:679px;font-size:14px;color:#9AA0A6">18 / 23</div>
+</section>
+
+<!-- ============ SLIDE 19 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:34px;width:8px;height:32px"></div>
+  <div class="t" style="left:82px;top:32px;font-size:30px;font-weight:700;color:#26222B">luciawang0901 · 2/3 — she translated &amp; iterated</div>
+  <div class="t" style="left:60px;top:78px;font-size:17px;color:#5B5660">She translated the tutorial, learning Git &amp; GitHub through three review rounds:</div>
+  <div class="t" style="left:60px;top:130px;font-size:14px;font-weight:700;color:#ED225D">1ST ATTEMPT · PR #1433</div>
+  <div class="pic" style="left:60px;top:151px;width:1120px;height:153px;padding:0"><img style="width:100%;height:100%;object-fit:fill;border-radius:3px" src="media/image17.png" alt=""></div>
+  <div class="t" style="left:60px;top:312px;font-size:14px;font-weight:700;color:#ED225D">2ND ATTEMPT · PR #1442</div>
+  <div class="pic" style="left:60px;top:333px;width:1120px;height:153px;padding:0"><img style="width:100%;height:100%;object-fit:fill;border-radius:3px" src="media/image18.png" alt=""></div>
+  <div class="t" style="left:60px;top:494px;font-size:14px;font-weight:700;color:#ED225D">MERGED ✓ · PR #1462</div>
+  <div class="pic" style="left:60px;top:515px;width:1120px;height:153px;padding:0"><img style="width:100%;height:100%;object-fit:fill;border-radius:3px" src="media/image19.png" alt=""></div>
+  <div class="t" style="left:60px;top:679px;font-size:14px;color:#9AA0A6">Real contributor journey · github.com</div>
+  <div class="t" style="left:1177px;top:679px;font-size:14px;color:#9AA0A6">19 / 23</div>
+</section>
+
+<!-- ============ SLIDE 20 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:34px;width:8px;height:32px"></div>
+  <div class="t" style="left:82px;top:32px;font-size:30px;font-weight:700;color:#26222B">luciawang0901 · 3/3 — she found a bug &amp; was celebrated</div>
+  <div class="t" style="left:60px;top:82px;font-size:15px;font-weight:700;color:#ED225D">THE BUG SHE SPOTTED · ISSUE #1446</div>
+  <div class="pic" style="left:60px;top:106px;width:560px;height:77px;padding:0"><img style="width:100%;height:100%;object-fit:fill;border-radius:3px" src="media/image20.png" alt=""></div>
+  <div class="t" style="left:60px;top:195px;font-size:16px;color:#5B5660;max-width:564px;line-height:1.4">While translating, she noticed the content stayed in English after switching language — and filed a real bug report.</div>
+  <div class="t" style="left:656px;top:82px;font-size:15px;font-weight:700;color:#ED225D">MERGED &amp; CELEBRATED · PR #1462</div>
+  <div class="pic" style="left:656px;top:106px;width:560px;height:68px;padding:0"><img style="width:100%;height:100%;object-fit:fill;border-radius:3px" src="media/image21.png" alt=""></div>
+  <div class="t" style="left:656px;top:186px;font-size:16px;color:#5B5660;max-width:564px;line-height:1.4">Reviewed by me (“LGTM”) — and the maintainers: “Amazing work… 辛苦了!”</div>
+  <div class="chip" style="left:60px;top:621px;width:1160px;height:58px;border-radius:8px"></div>
+  <div class="t" style="left:78px;top:635px;font-size:17px;color:#26222B"><b style="color:#ED225D">From zero to real impact.</b> Start with a translation — you never know where it leads. We encourage exactly this.</div>
+  <div class="t" style="left:60px;top:679px;font-size:14px;color:#9AA0A6">Real contributor journey · github.com</div>
+  <div class="t" style="left:1177px;top:679px;font-size:14px;color:#9AA0A6">20 / 23</div>
+</section>
+
+<!-- ============ SLIDE 21 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:44px;width:8px;height:34px"></div>
+  <div class="t" style="left:82px;top:40px;font-size:34px;font-weight:700;color:#26222B">Our take on AI</div>
+
+  <img class="pic" style="left:60px;top:257px;width:30px;height:30px;border:none;background:transparent" src="media/image22.svg" alt="">
+  <div class="t" style="left:106px;top:257px;font-size:19px;color:#26222B;max-width:540px;line-height:1.4">We don't let AI write translations — <b>quality needs human judgment</b>.</div>
+  <img class="pic" style="left:60px;top:348px;width:30px;height:30px;border:none;background:transparent" src="media/image23.svg" alt="">
+  <div class="t" style="left:106px;top:348px;font-size:19px;color:#26222B;max-width:540px;line-height:1.4">But AI is a great <b>helper</b> — for setup, explanations, and unsticking yourself.</div>
+  <img class="pic" style="left:60px;top:439px;width:30px;height:30px;border:none;background:transparent" src="media/image24.svg" alt="">
+  <div class="t" style="left:106px;top:439px;font-size:19px;color:#26222B;max-width:540px;line-height:1.4">Every translation is <b>human-reviewed</b>. Want a review? Find me — <b style="color:#ED225D">lirenjie95</b>.</div>
+
+  <div class="card" style="left:690px;top:254px;width:530px;height:257px"></div>
+  <div class="t" style="left:712px;top:274px;font-size:14px;font-weight:700;color:#9AA0A6">ASKING WORKBUDDY</div>
+  <div class="chip" style="left:712px;top:305px;width:486px;height:102px;border-radius:10px"></div>
+  <div class="t" style="left:726px;top:317px;font-size:15px;font-weight:700;color:#ED225D">You</div>
+  <div class="t" style="left:726px;top:339px;font-size:16px;color:#26222B;max-width:458px;line-height:1.4">“I want to contribute to an open-source repo — help me set up my dev environment.”</div>
+  <div class="card" style="left:712px;top:417px;width:486px;height:74px;border-radius:10px;background:#F5F0EC"></div>
+  <div class="t" style="left:726px;top:429px;font-size:15px;font-weight:700;color:#5B5660">WorkBuddy</div>
+  <div class="t" style="left:726px;top:450px;font-size:16px;color:#5B5660;max-width:458px">Sure — I'll walk you through <b>git clone → npm install → first PR</b>.</div>
+
+  <div class="t" style="left:60px;top:675px;font-size:14px;color:#9AA0A6">lirenjie95 · PCD 2026</div>
+  <div class="t" style="left:1177px;top:675px;font-size:14px;color:#9AA0A6">21 / 23</div>
+</section>
+
+<!-- ============ SLIDE 22 ============ -->
+<section class="slide hidden">
+  <div class="bar" style="left:60px;top:44px;width:8px;height:34px"></div>
+  <div class="t" style="left:82px;top:40px;font-size:34px;font-weight:700;color:#26222B">Two ways · fix a failing clone / push</div>
+  <div class="t" style="left:60px;top:245px;font-size:23px;color:#26222B;max-width:544px"><b>clone</b> or <b>push</b> over HTTPS keeps failing?</div>
+  <div class="t" style="left:60px;top:303px;font-size:19px;color:#5B5660;max-width:544px;line-height:1.4">You have two alternatives — both often just work behind firewalls and proxies:</div>
+
+  <img class="pic" style="left:60px;top:397px;width:24px;height:24px;border:none;background:transparent" src="media/image25.svg" alt="">
+  <div class="t" style="left:96px;top:394px;font-size:17px;color:#26222B"><b>git://github.com/...</b> — the classic trick</div>
+  <img class="pic" style="left:60px;top:439px;width:24px;height:24px;border:none;background:transparent" src="media/image7.svg" alt="">
+  <div class="t" style="left:96px;top:436px;font-size:17px;color:#26222B"><b>git@github.com:...</b> — SSH, the modern standard</div>
+  <img class="pic" style="left:60px;top:489px;width:30px;height:30px;border:none;background:transparent" src="media/image25.svg" alt="">
+  <div class="t" style="left:104px;top:488px;font-size:17px;color:#5B5660;max-width:500px">Swap the URL, push again — your translation is on its way.</div>
+
+  <div class="code" style="position:absolute;left:648px;top:262px;width:572px;background:var(--code);border-radius:8px;padding:14px 16px;font-size:14px;line-height:1.4"><span class="c-com"># option 1 — the git:// protocol</span><br><span class="c-git">git</span><span class="c-plain"> </span><span class="c-arg">remote</span><span class="c-plain"> </span><span class="c-arg">set-url</span><span class="c-plain"> </span><span class="c-arg">origin</span><span class="c-plain"> </span><span class="c-flag">"</span><br><span class="c-plain">  </span><span class="c-arg">git://github.com/processing/p5.js-website.git</span><span class="c-flag">"</span><br><span class="c-blank"> </span><br><span class="c-com"># option 2 — switch to SSH</span><br><span class="c-git">git</span><span class="c-plain"> </span><span class="c-arg">remote</span><span class="c-plain"> </span><span class="c-arg">set-url</span><span class="c-plain"> </span><span class="c-arg">origin</span><span class="c-plain"> </span><span class="c-flag">"</span><br><span class="c-plain">  </span><span class="c-arg">git@github.com:processing/p5.js-website.git</span><span class="c-flag">"</span><br><span class="c-blank"> </span><br><span class="c-git">git</span><span class="c-plain"> </span><span class="c-arg">push</span><span class="c-plain"> </span><span class="c-arg">origin</span><span class="c-plain"> </span><span class="c-arg">my-translation</span></div>
+
+  <div class="t" style="left:60px;top:675px;font-size:14px;color:#9AA0A6">lirenjie95 · PCD 2026</div>
+  <div class="t" style="left:1177px;top:675px;font-size:14px;color:#9AA0A6">22 / 23</div>
+</section>
+
+<!-- ============ SLIDE 23 (grad) ============ -->
+<section class="slide grad hidden">
+  <div class="t" style="left:0px;top:203px;font-size:18px;font-weight:700;color:#FFF9F6;text-align:center;width:1280px;white-space:nowrap">Q&amp;A</div>
+  <div class="t" style="left:0px;top:243px;font-size:66px;font-weight:700;color:#FFF9F6;text-align:center;width:1280px;white-space:nowrap">Come translate with us.</div>
+  <div class="t" style="left:0px;top:351px;font-size:24px;color:#FFF9F6;text-align:center;width:1280px;white-space:nowrap">Your first PR is one translation away — and I'll review it.</div>
+  <div class="card" style="left:377px;top:425px;width:395px;height:41px;border-radius:8px;border:none"></div>
+  <div class="t" style="left:377px;top:435px;font-size:17px;font-weight:700;color:#ED225D;text-align:center;width:395px;white-space:nowrap;font-family:'Menlo','Consolas',monospace">github.com/processing/p5.js-website</div>
+  <div class="card" style="left:786px;top:425px;width:118px;height:41px;border-radius:8px;border:none"></div>
+  <div class="t" style="left:786px;top:435px;font-size:17px;font-weight:700;color:#ED225D;text-align:center;width:118px;white-space:nowrap;font-family:'Menlo','Consolas',monospace">p5js.org</div>
+  <div class="t" style="left:0px;top:494px;font-size:20px;color:#FFF9F6;text-align:center;width:1280px;white-space:nowrap">Find me on GitHub: <b>@lirenjie95</b></div>
+</section>
+
+  </div><!-- /viewport -->
+</div>
+
+<script>
+(function () {
+  var W = 1280, H = 720;
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var viewport = document.getElementById('viewport');
+  var counter = document.getElementById('counter');
+  var cur = 0;
+
+  function show(i) {
+    if (i < 0) i = 0;
+    if (i > slides.length - 1) i = slides.length - 1;
+    slides.forEach(function (s, idx) { s.classList.toggle('hidden', idx !== i); });
+    cur = i;
+    counter.textContent = (i + 1) + ' / ' + slides.length;
+    layout();
+  }
+
+  function layout() {
+    var s = Math.min(viewport.clientWidth / W, viewport.clientHeight / H);
+    var x = (viewport.clientWidth - W * s) / 2;
+    var y = (viewport.clientHeight - H * s) / 2;
+    slides[cur].style.transform = 'translate(' + x + 'px,' + y + 'px) scale(' + s + ')';
+  }
+
+  function next() { show(cur + 1); }
+  function prev() { show(cur - 1); }
+
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); next(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+    else if (e.key === 'Home') { e.preventDefault(); show(0); }
+    else if (e.key === 'End') { e.preventDefault(); show(slides.length - 1); }
+  });
+
+  viewport.addEventListener('click', function (e) {
+    var r = viewport.getBoundingClientRect();
+    if (e.clientX - r.left > r.width / 2) next(); else prev();
+  });
+
+  var touchX = null;
+  viewport.addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; });
+  viewport.addEventListener('touchend', function (e) {
+    if (touchX === null) return;
+    var dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 40) { if (dx < 0) next(); else prev(); }
+    touchX = null;
+  });
+
+  window.addEventListener('resize', layout);
+  show(0);
+})();
+</script>
+</body>
+</html>
